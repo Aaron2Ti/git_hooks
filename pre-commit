@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+# {{{1
+module DontCommitDebugger
+  extend self
+
+  def pray
+    return if ENV['_force']
+
+    modified_or_added = `git diff --cached --name-status | ag 'M\\s|A\\s' | awk '{print $2}'`.split "\n"
+
+    faults = modified_or_added.select do |file|
+      file =~ /.*\.rb|.*\.erb|.*\.slim|.*\.haml/
+    end.select do |file|
+      not `ag 'binding\.pry|debugger' #{file}`.empty?
+    end
+
+    unless faults.empty?
+      puts 'COMMIT REJECTED, Found "debugger or binding.pry" references!'
+      puts "Please check the following modifications\n\n"
+
+      faults.each do |f|
+        puts "\t#{f}"
+      end
+
+      exit 1
+    end
+  end
+end
+# }}}
+
+DontCommitDebugger.pray
+
+# vim: fdm=marker
