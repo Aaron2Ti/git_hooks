@@ -3,7 +3,7 @@
 if ENV['_g'].is_a? String
   message_path = ARGV.first
 
-  message = File.read(message_path).strip.chomp
+  message = File.read(message_path).strip
   new_message = "[#{ENV['_g']}] #{message}"
 
   File.open(message_path, 'w') { |f| f.write new_message }
